@@ -184,13 +184,10 @@ class GitHubService:
         if author_name and author_email:
             author = InputGitAuthor(author_name, author_email)
 
-        result = repo.create_file(
-            path=file_path,
-            message=commit_message,
-            content=content,
-            branch=branch,
-            author=author,
-        )
+        kwargs: dict = dict(path=file_path, message=commit_message, content=content, branch=branch)
+        if author:
+            kwargs["author"] = author
+        result = repo.create_file(**kwargs)
         return result["commit"].sha
 
     def update_file(
@@ -210,14 +207,10 @@ class GitHubService:
         if author_name and author_email:
             author = InputGitAuthor(author_name, author_email)
 
-        result = repo.update_file(
-            path=file_path,
-            message=commit_message,
-            content=content,
-            sha=sha,
-            branch=branch,
-            author=author,
-        )
+        kwargs: dict = dict(path=file_path, message=commit_message, content=content, sha=sha, branch=branch)
+        if author:
+            kwargs["author"] = author
+        result = repo.update_file(**kwargs)
         return result["commit"].sha
 
     def delete_file(
