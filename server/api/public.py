@@ -10,11 +10,9 @@ from fastapi import APIRouter, HTTPException, Request, Response
 
 from server.db.database import get_db
 from server.db.queries import prompts as prompt_queries
-from server.services.prompt_service import get_prompt_with_content, get_prompt_by_name_with_content
 from server.services.github_service import GitHubService
 from server.services.render_service import render_prompt, render_prompt_with_includes
 from server.services.cache_service import prompt_cache
-from server.utils.crypto import decrypt
 from server.auth.api_keys import check_scope
 
 logger = logging.getLogger(__name__)

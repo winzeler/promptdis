@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 
 import pytest
-import pytest_asyncio
 import aiosqlite
 
 from server.services.render_service import render_prompt, render_prompt_with_includes

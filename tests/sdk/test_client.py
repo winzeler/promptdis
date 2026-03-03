@@ -13,16 +13,13 @@ sdk_src = str(Path(__file__).resolve().parent.parent.parent / "sdk" / "src")
 if sdk_src not in sys.path:
     sys.path.insert(0, sdk_src)
 
-import json
-import time
-from unittest.mock import patch
 
 import httpx
 import pytest
 
 from promptdis.client import PromptClient
 from promptdis.async_client import AsyncPromptClient
-from promptdis.exceptions import PromptdisError, NotFoundError, AuthenticationError, RateLimitError
+from promptdis.exceptions import PromptdisError, NotFoundError, AuthenticationError
 
 
 # ---------------------------------------------------------------------------
