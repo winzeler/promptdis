@@ -3,7 +3,7 @@
 from promptdis.client import PromptClient
 from promptdis.async_client import AsyncPromptClient
 from promptdis.models import Prompt
-from promptdis.exceptions import PromptdisError, NotFoundError, AuthenticationError
+from promptdis.exceptions import PromptdisError, NotFoundError, AuthenticationError, ForbiddenError
 
 __all__ = [
     "PromptClient",
@@ -12,4 +12,5 @@ __all__ = [
     "PromptdisError",
     "NotFoundError",
     "AuthenticationError",
+    "ForbiddenError",
 ]

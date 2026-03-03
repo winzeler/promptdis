@@ -87,7 +87,8 @@ async def test_list_apps(admin_client):
     assert resp.status_code == 200
     data = resp.json()
     assert len(data["items"]) >= 1
-    assert data["items"][0]["id"] == APP_ID
+    app_ids = [item["id"] for item in data["items"]]
+    assert APP_ID in app_ids
 
 
 @pytest.mark.asyncio

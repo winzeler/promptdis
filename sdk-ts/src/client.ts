@@ -3,6 +3,7 @@ import {
   PromptdisError,
   NotFoundError,
   AuthenticationError,
+  ForbiddenError,
   RateLimitError,
 } from "./errors.js";
 import type { Prompt } from "./models.js";
@@ -192,6 +193,8 @@ export class PromptClient {
     switch (resp.status) {
       case 401:
         throw new AuthenticationError(message);
+      case 403:
+        throw new ForbiddenError(message);
       case 404:
         throw new NotFoundError(message);
       case 429:

@@ -30,7 +30,7 @@ Git-native LLM prompt management platform. Store prompts as Markdown files in Gi
 - **Server:** FastAPI + aiosqlite + PyGithub
 - **Frontend:** React 18 + Vite + Tailwind CSS + TanStack Query + CodeMirror 6
 - **Database:** SQLite (index/cache only — GitHub is the source of truth)
-- **Auth:** GitHub OAuth SSO (web) + API keys (SDK)
+- **Auth:** GitHub OAuth SSO (web) + application-scoped API keys (SDK)
 
 ## Quick Start
 
@@ -372,7 +372,7 @@ prompt-mgmt/
 ## Testing
 
 ```bash
-# Backend (224 tests)
+# Backend (253 tests)
 python -m pytest tests/ -v
 
 # Frontend (66 tests)
@@ -382,7 +382,7 @@ cd web && npx vitest run
 cd sdk-ts && npx vitest run
 ```
 
-**308 total tests** across Python backend, web frontend, and TypeScript SDK.
+**337 total tests** across Python backend, web frontend, and TypeScript SDK.
 
 ## CI/CD
 

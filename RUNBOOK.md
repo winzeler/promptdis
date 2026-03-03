@@ -138,7 +138,7 @@ This starts the API on port 8000 and the web UI on port 5173. Pass configuration
 ### Running Tests
 
 ```bash
-# Backend (Python — 224 tests)
+# Backend (Python — 253 tests)
 python -m pytest tests/ -v
 
 # Frontend (Vitest — 66 tests)
@@ -617,19 +617,20 @@ python -c "import secrets; print(secrets.token_hex(32))"
 ### API Key Management
 
 ```bash
-# Create a new API key (via web UI or API)
-curl -X POST http://localhost:8000/api/v1/api-keys \
+# Create a new API key scoped to specific applications (via web UI or API)
+curl -X POST http://localhost:8000/api/v1/admin/api-keys \
   -H "Cookie: session=<session-id>" \
   -H "Content-Type: application/json" \
-  -d '{"name": "production-service"}'
+  -d '{"name": "production-service", "scopes": {"app_ids": ["<app-uuid>"], "permissions": ["read"]}}'
 # Response includes the full key (pm_live_...) — store it securely, it's only shown once
+# Note: app_ids is required and must be a non-empty list of valid application UUIDs
 
 # List keys
-curl http://localhost:8000/api/v1/api-keys \
+curl http://localhost:8000/api/v1/admin/api-keys \
   -H "Cookie: session=<session-id>"
 
 # Revoke a key
-curl -X DELETE http://localhost:8000/api/v1/api-keys/<key-id> \
+curl -X DELETE http://localhost:8000/api/v1/admin/api-keys/<key-id> \
   -H "Cookie: session=<session-id>"
 ```
 
@@ -733,6 +734,13 @@ SELECT * FROM schema_version;
 ```sql
 INSERT INTO prompts_fts(prompts_fts) VALUES('rebuild');
 ```
+
+### **403 Forbidden on public API**
+
+- The API key is scoped to specific applications and the requested prompt belongs to a different application
+- Check the key's `scopes.app_ids` — it must include the `app_id` of the prompt being fetched
+- Existing keys with `scopes=NULL` (created before scope enforcement) have access to all apps
+- To fix: create a new key with the correct application(s) selected, or use an unscoped legacy key
 
 ### **Rate limiting (429 Too Many Requests)**
 

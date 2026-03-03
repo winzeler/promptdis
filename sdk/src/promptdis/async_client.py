@@ -10,7 +10,7 @@ import httpx
 
 from promptdis.cache import PromptCache
 from promptdis.models import Prompt
-from promptdis.exceptions import PromptdisError, NotFoundError, AuthenticationError
+from promptdis.exceptions import PromptdisError, NotFoundError, AuthenticationError, ForbiddenError
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +80,8 @@ class AsyncPromptClient:
             return Prompt.from_api_response(entry.data)
         if resp.status_code == 401:
             raise AuthenticationError()
+        if resp.status_code == 403:
+            raise ForbiddenError()
         if resp.status_code == 404:
             raise NotFoundError(f"Prompt not found: {path}")
         if resp.status_code >= 400:

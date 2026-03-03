@@ -23,6 +23,13 @@ class AuthenticationError(PromptdisError):
         super().__init__(message, status_code=401)
 
 
+class ForbiddenError(PromptdisError):
+    """API key does not have access to the requested resource."""
+
+    def __init__(self, message: str = "Forbidden"):
+        super().__init__(message, status_code=403)
+
+
 class RateLimitError(PromptdisError):
     """Rate limit exceeded."""
 

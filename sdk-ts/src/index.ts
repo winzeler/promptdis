@@ -7,5 +7,6 @@ export {
   PromptdisError,
   NotFoundError,
   AuthenticationError,
+  ForbiddenError,
   RateLimitError,
 } from "./errors.js";

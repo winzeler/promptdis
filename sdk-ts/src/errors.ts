@@ -22,6 +22,14 @@ export class AuthenticationError extends PromptdisError {
   }
 }
 
+/** Thrown when the API key lacks access to the requested resource (403). */
+export class ForbiddenError extends PromptdisError {
+  constructor(message = "Forbidden") {
+    super(message);
+    this.name = "ForbiddenError";
+  }
+}
+
 /** Thrown when rate limit is exceeded (429). */
 export class RateLimitError extends PromptdisError {
   public retryAfter: number | null;
