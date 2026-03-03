@@ -1,5 +1,4 @@
 import { Link, useLocation } from "react-router-dom";
-import { useOrgs, useApps } from "../../hooks/usePrompts";
 import OrgAppSelector from "./OrgAppSelector";
 
 const navItems = [

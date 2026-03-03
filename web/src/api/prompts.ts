@@ -123,7 +123,7 @@ export async function fetchPromptDetail(
 
 export async function updatePrompt(
   promptId: string,
-  data: { front_matter?: Record<string, unknown>; body?: string; commit_message: string }
+  data: { front_matter?: Record<string, unknown>; body?: string; commit_message: string; expected_sha?: string | null }
 ): Promise<unknown> {
   return apiFetch(`/api/v1/admin/prompts/${promptId}`, {
     method: "PUT",
