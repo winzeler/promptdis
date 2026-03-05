@@ -252,6 +252,15 @@ response, err := llmClient.Chat(ctx, ChatRequest{
 })
 ```
 
+## Examples
+
+See [`examples/basic/`](examples/basic/) for a runnable CLI that demonstrates fetch, render, cache, and error handling.
+
+```bash
+cd sdk-go/examples/basic
+PROMPTDIS_URL=http://localhost:8000 PROMPTDIS_API_KEY=pm_test_... go run .
+```
+
 ## Differences from Python/TS SDKs
 
 | Feature | Python | TypeScript | Go |

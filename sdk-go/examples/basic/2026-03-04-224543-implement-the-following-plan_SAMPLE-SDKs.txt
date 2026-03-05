@@ -1,0 +1,889 @@
+
+╭─── Claude Code v2.1.69 ──────────────────────────────────────────────────────╮
+│                                                    │ Recent activity         │
+│                 Welcome back Loren!                │ No recent activity      │
+│                                                    │ ─────────────────────── │
+│                       ▐▛███▜▌                      │ What's new              │
+│                      ▝▜█████▛▘                     │ Added the `/claude-api… │
+│                        ▘▘ ▝▝                       │ Added Ctrl+U on an emp… │
+│                                                    │ Added numeric keypad s… │
+│ Opus 4.6 · Claude Max · lorenwinzeler@gmail.com's  │ /release-notes for more │
+│ Organization                                       │                         │
+│ ~/src/futureself/prompt-mgmt/sdk-go/examples/basic │                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Plan to implement                                                            │
+│                                                                              │
+│ SDK Sample Apps Plan                                                         │
+│                                                                              │
+│ Context                                                                      │
+│                                                                              │
+│ Promptdis has 4 SDKs (Python, JavaScript, TypeScript, Go) but no example     │
+│ applications. Developers need simple, runnable examples showing how to use   │
+│ each SDK. Each sample app will be a minimal CLI that demonstrates core SDK   │
+│ operations: initialize, fetch, render, cache, and error handling. Examples   │
+│ live inside each SDK directory at sdk-{lang}/examples/.                      │
+│                                                                              │
+│ ---                                                                          │
+│ 1. Create .env.example (repo root)                                           │
+│                                                                              │
+│ File: /Users/lorenwinzeler/src/futureself/prompt-mgmt/.env.example           │
+│                                                                              │
+│ PROMPTDIS_URL=http://localhost:8000                                          │
+│ PROMPTDIS_API_KEY=pm_test_your_key_here                                      │
+│                                                                              │
+│ ---                                                                          │
+│ 2. Python Example — sdk-py/examples/                                         │
+│                                                                              │
+│ sdk-py/examples/main.py (~60 lines)                                          │
+│                                                                              │
+│ Single-file CLI script. No extra deps beyond the SDK (which brings httpx +   │
+│ jinja2). Uses context manager.                                               │
+│                                                                              │
+│ - Read PROMPTDIS_URL and PROMPTDIS_API_KEY from env                          │
+│ - with PromptClient(base_url=..., api_key=...) as client:                    │
+│ - Fetch by name: client.get_by_name("demo", "myapp", "greeting")             │
+│ - Print prompt fields: id, name, version, model, environment, body preview   │
+│ - Fetch by ID: client.get(prompt.id)                                         │
+│ - Local render (Jinja2): prompt.render({"name": "Alice"})                    │
+│ - Server-side render: client.render(prompt.id, {"name": "Bob"})              │
+│ - Cache stats: client.cache_stats()                                          │
+│ - Error handling: try client.get("nonexistent-id"), catch NotFoundError      │
+│                                                                              │
+│ Key API details (from sdk-py/src/promptdis/client.py):                       │
+│ - Constructor: PromptClient(base_url, api_key, cache_ttl=300,                │
+│ cache_max_size=1000)                                                         │
+│ - render() returns a string (calls get() then prompt.render() internally)    │
+│ - cache_stats() returns dict                                                 │
+│ - Context manager: __enter__/__exit__ calls close()                          │
+│                                                                              │
+│ sdk-py/examples/README.md (~40 lines)                                        │
+│                                                                              │
+│ - Title, what it demonstrates                                                │
+│ - Prerequisites: Python 3.11+, SDK installed (pip install -e .. or uv pip    │
+│ install -e ..)                                                               │
+│ - Run command with env vars                                                  │
+│ - Expected output description                                                │
+│ - Link to full SDK docs                                                      │
+│                                                                              │
+│ ---                                                                          │
+│ 3. JavaScript Example — sdk-js/examples/                                     │
+│                                                                              │
+│ sdk-js/examples/main.mjs (~55 lines)                                         │
+│                                                                              │
+│ Single-file ESM script. Zero extra deps. Uses ../src/index.js relative       │
+│ import for local dev.                                                        │
+│                                                                              │
+│ - Shebang: #!/usr/bin/env node                                               │
+│ - Read env vars from process.env                                             │
+│ - new PromptClient({ baseUrl, apiKey })                                      │
+│ - Fetch by name: client.getByName("demo", "myapp", "greeting")               │
+│ - Print prompt fields                                                        │
+│ - Fetch by ID: client.get(prompt.id)                                         │
+│ - Local render: client.renderLocal(prompt.body, { name: "Alice" })           │
+│ - Server-side render: client.render(prompt.id, { name: "Bob" })              │
+│ - Cache stats: client.cacheStats()                                           │
+│ - Error handling: try client.get("nonexistent-id"), catch NotFoundError      │
+│                                                                              │
+│ Key API details (from sdk-js/src/client.js):                                 │
+│ - Constructor: new PromptClient({ baseUrl, apiKey, cacheMaxSize?,            │
+│ cacheTtlMs?, maxRetries? })                                                  │
+│ - render() returns { rendered_body, meta }                                   │
+│ - renderLocal() returns string                                               │
+│ - cacheStats() returns { size, maxSize, ttlMs }                              │
+│                                                                              │
+│ sdk-js/examples/README.md (~40 lines)                                        │
+│                                                                              │
+│ - Prerequisites: Node.js 18+                                                 │
+│ - Run: PROMPTDIS_URL=... PROMPTDIS_API_KEY=... node examples/main.mjs        │
+│ - For published package: change import to "@promptdis/client-js"             │
+│                                                                              │
+│ ---                                                                          │
+│ 4. TypeScript Example — sdk-ts/examples/                                     │
+│                                                                              │
+│ sdk-ts/examples/main.ts (~60 lines)                                          │
+│                                                                              │
+│ Same logic as JS example but with TypeScript types. Uses tsx for zero-config │
+│  execution.                                                                  │
+│                                                                              │
+│ - import { PromptClient } from "@promptdis/client";                          │
+│ - import type { Prompt } from "@promptdis/client";                           │
+│ - Type annotations on variables: const prompt: Prompt = ...                  │
+│ - Error handling casts: const err = e as Error                               │
+│ - Otherwise identical flow to JS example                                     │
+│                                                                              │
+│ sdk-ts/examples/package.json (~15 lines)                                     │
+│                                                                              │
+│ {                                                                            │
+│   "name": "promptdis-ts-example",                                            │
+│   "private": true,                                                           │
+│   "type": "module",                                                          │
+│   "scripts": { "start": "tsx main.ts" },                                     │
+│   "dependencies": { "@promptdis/client": "file:.." },                        │
+│   "devDependencies": { "tsx": "^4.0.0" }                                     │
+│ }                                                                            │
+│                                                                              │
+│ sdk-ts/examples/tsconfig.json (~10 lines)                                    │
+│                                                                              │
+│ Minimal: target ES2022, module ESNext, moduleResolution bundler, strict,     │
+│ outDir dist.                                                                 │
+│                                                                              │
+│ sdk-ts/examples/README.md (~45 lines)                                        │
+│                                                                              │
+│ - Prerequisites: Node.js 18+                                                 │
+│ - Setup: cd sdk-ts/examples && npm install                                   │
+│ - Run: PROMPTDIS_URL=... PROMPTDIS_API_KEY=... npm start                     │
+│ - Alternative: compile with npx tsc && node dist/main.js                     │
+│                                                                              │
+│ ---                                                                          │
+│ 5. Go Example — sdk-go/examples/basic/                                       │
+│                                                                              │
+│ sdk-go/examples/basic/main.go (~80 lines)                                    │
+│                                                                              │
+│ Standard Go CLI. Zero external deps beyond the SDK. Uses                     │
+│ context.Background().                                                        │
+│                                                                              │
+│ - promptdis.NewClient(promptdis.ClientOptions{BaseURL: ..., APIKey: ...})    │
+│ - defer client.Close()                                                       │
+│ - Fetch by name: client.GetByName(ctx, "demo", "myapp", "greeting") — note:  │
+│ no env option in basic example                                               │
+│ - Print: prompt.ID, prompt.Name, prompt.Version,                             │
+│ prompt.ModelDefault("unknown"), prompt.Environment, prompt.Body[:80]         │
+│ - Fetch by ID: client.Get(ctx, prompt.ID)                                    │
+│ - Local render: client.RenderLocal(prompt.Body, map[string]string{"name":    │
+│ "Alice"})                                                                    │
+│ - Server-side render: client.Render(ctx, prompt.ID,                          │
+│ map[string]interface{}{"name": "Bob"}) → result.RenderedBody                 │
+│ - Cache stats: client.CacheStats() → stats.Size, stats.MaxSize, stats.TTL    │
+│ - Error handling: client.Get(ctx, "nonexistent-id") with errors.As for       │
+│ *promptdis.NotFoundError                                                     │
+│                                                                              │
+│ Key API details (from sdk-go/client.go):                                     │
+│ - NewClient returns (*Client, error)                                         │
+│ - GetByName uses variadic GetOption (e.g., WithEnvironment("prod"))          │
+│ - Render returns (*RenderResult, error), RenderResult.RenderedBody           │
+│ - CacheStats() returns CacheStats{Size, MaxSize, TTL}                        │
+│ - RenderLocal takes map[string]string; Render takes map[string]interface{}   │
+│                                                                              │
+│ sdk-go/examples/basic/go.mod (~5 lines)                                      │
+│                                                                              │
+│ module github.com/futureself-app/promptdis-go/examples/basic                 │
+│ go 1.21                                                                      │
+│ require github.com/futureself-app/promptdis-go v0.0.0                        │
+│ replace github.com/futureself-app/promptdis-go => ../..                      │
+│                                                                              │
+│ sdk-go/examples/basic/README.md (~40 lines)                                  │
+│                                                                              │
+│ - Prerequisites: Go 1.21+                                                    │
+│ - Run: PROMPTDIS_URL=... PROMPTDIS_API_KEY=... go run .                      │
+│                                                                              │
+│ ---                                                                          │
+│ 6. Create PROMPTDIS_EXAMPLES.md (guide/index)                                │
+│                                                                              │
+│ File: ~/src/futureself/dwight_docs/prompt_mgmt/PROMPTDIS_EXAMPLES.md (~80    │
+│ lines)                                                                       │
+│                                                                              │
+│ Index document linking to all sample apps:                                   │
+│ - Overview: what the examples demonstrate                                    │
+│ - Table: SDK, Language, Location, Run Command                                │
+│ - Prerequisites section (env vars, running server)                           │
+│ - Link to each example's README                                              │
+│ - What each example demonstrates (fetch, render, cache, errors)              │
+│                                                                              │
+│ ---                                                                          │
+│ 7. Create PROMPTDIS_SDK_SAMPLE_APPS.md (build plan/checklist)                │
+│                                                                              │
+│ File: ~/src/futureself/dwight_docs/prompt_mgmt/PROMPTDIS_SDK_SAMPLE_APPS.md  │
+│ (~60 lines)                                                                  │
+│                                                                              │
+│ Build plan and checklist:                                                    │
+│ - Task breakdown with checkboxes                                             │
+│ - File listing per SDK                                                       │
+│ - Verification steps                                                         │
+│ - Dependencies and prerequisites                                             │
+│                                                                              │
+│ ---                                                                          │
+│ 8. Update SDK READMEs                                                        │
+│                                                                              │
+│ Add a "## Examples" section to each SDK README, after the "Development"      │
+│ section:                                                                     │
+│                                                                              │
+│ sdk-py/README.md                                                             │
+│                                                                              │
+│ - Link to examples/main.py                                                   │
+│ - Quick run command                                                          │
+│                                                                              │
+│ sdk-js/README.md                                                             │
+│                                                                              │
+│ - Link to examples/main.mjs                                                  │
+│ - Quick run command                                                          │
+│                                                                              │
+│ sdk-ts/README.md                                                             │
+│                                                                              │
+│ - Link to examples/                                                          │
+│ - Quick run command (npm start)                                              │
+│                                                                              │
+│ sdk-go/README.md                                                             │
+│                                                                              │
+│ - Link to examples/basic/                                                    │
+│ - Quick run command (go run .)                                               │
+│                                                                              │
+│ ---                                                                          │
+│ 9. Update Main README.md                                                     │
+│                                                                              │
+│ File: /Users/lorenwinzeler/src/futureself/prompt-mgmt/README.md              │
+│                                                                              │
+│ Add a "## Examples" section (after the SDK sections, before API Overview)    │
+│ with:                                                                        │
+│ - Brief description                                                          │
+│ - Table: Language, Location, Run Command                                     │
+│ - Link to PROMPTDIS_EXAMPLES.md for full guide                               │
+│                                                                              │
+│ ---                                                                          │
+│ 10. Update Spec: PROMPT_APP.md                                               │
+│                                                                              │
+│ File: ~/src/futureself/dwight_docs/prompt_mgmt/PROMPT_APP.md                 │
+│                                                                              │
+│ - Section 12 Repo Structure: Add examples/ subdirectory under each           │
+│ sdk-{lang}/ tree                                                             │
+│ - Phase 4 table: Add "SDK example apps" row                                  │
+│                                                                              │
+│ ---                                                                          │
+│ 11. Update API Docs: PROMPTORY_API_DOCS.md                                   │
+│                                                                              │
+│ File: ~/src/futureself/dwight_docs/prompt_mgmt/PROMPTORY_API_DOCS.md         │
+│                                                                              │
+│ - After each SDK Reference section, add a one-line "See sdk-{lang}/examples/ │
+│  for a runnable example."                                                    │
+│                                                                              │
+│ ---                                                                          │
+│ Files Summary                                                                │
+│                                                                              │
+│ New files                                                                    │
+│                                                                              │
+│ ┌────────────────────────────────────────────────┬────────┐                  │
+│ │                      File                      │ ~Lines │                  │
+│ ├────────────────────────────────────────────────┼────────┤                  │
+│ │ .env.example                                   │ 3      │                  │
+│ ├────────────────────────────────────────────────┼────────┤                  │
+│ │ sdk-py/examples/main.py                        │ 60     │                  │
+│ ├────────────────────────────────────────────────┼────────┤                  │
+│ │ sdk-py/examples/README.md                      │ 40     │                  │
+│ ├────────────────────────────────────────────────┼────────┤                  │
+│ │ sdk-js/examples/main.mjs                       │ 55     │                  │
+│ ├────────────────────────────────────────────────┼────────┤                  │
+│ │ sdk-js/examples/README.md                      │ 40     │                  │
+│ ├────────────────────────────────────────────────┼────────┤                  │
+│ │ sdk-ts/examples/main.ts                        │ 60     │                  │
+│ ├────────────────────────────────────────────────┼────────┤                  │
+│ │ sdk-ts/examples/package.json                   │ 15     │                  │
+│ ├────────────────────────────────────────────────┼────────┤                  │
+│ │ sdk-ts/examples/tsconfig.json                  │ 10     │                  │
+│ ├────────────────────────────────────────────────┼────────┤                  │
+│ │ sdk-ts/examples/README.md                      │ 45     │                  │
+│ ├────────────────────────────────────────────────┼────────┤                  │
+│ │ sdk-go/examples/basic/main.go                  │ 80     │                  │
+│ ├────────────────────────────────────────────────┼────────┤                  │
+│ │ sdk-go/examples/basic/go.mod                   │ 5      │                  │
+│ ├────────────────────────────────────────────────┼────────┤                  │
+│ │ sdk-go/examples/basic/README.md                │ 40     │                  │
+│ ├────────────────────────────────────────────────┼────────┤                  │
+│ │ ~/dwight_docs/.../PROMPTDIS_EXAMPLES.md        │ 80     │                  │
+│ ├────────────────────────────────────────────────┼────────┤                  │
+│ │ ~/dwight_docs/.../PROMPTDIS_SDK_SAMPLE_APPS.md │ 60     │                  │
+│ └────────────────────────────────────────────────┴────────┘                  │
+│                                                                              │
+│ Total: 14 new files                                                          │
+│                                                                              │
+│ Modified files                                                               │
+│                                                                              │
+│ ┌─────────────────────────────────────────┬────────────────────────────────┐ │
+│ │                  File                   │             Change             │ │
+│ ├─────────────────────────────────────────┼────────────────────────────────┤ │
+│ │ sdk-py/README.md                        │ Add "Examples" section         │ │
+│ ├─────────────────────────────────────────┼────────────────────────────────┤ │
+│ │ sdk-js/README.md                        │ Add "Examples" section         │ │
+│ ├─────────────────────────────────────────┼────────────────────────────────┤ │
+│ │ sdk-ts/README.md                        │ Add "Examples" section         │ │
+│ ├─────────────────────────────────────────┼────────────────────────────────┤ │
+│ │ sdk-go/README.md                        │ Add "Examples" section (check  │ │
+│ │                                         │ if exists)                     │ │
+│ ├─────────────────────────────────────────┼────────────────────────────────┤ │
+│ │ README.md (repo root)                   │ Add "Examples" section with    │ │
+│ │                                         │ table                          │ │
+│ ├─────────────────────────────────────────┼────────────────────────────────┤ │
+│ │ ~/dwight_docs/.../PROMPT_APP.md         │ Update repo structure, Phase 4 │ │
+│ │                                         │  table                         │ │
+│ ├─────────────────────────────────────────┼────────────────────────────────┤ │
+│ │ ~/dwight_docs/.../PROMPTORY_API_DOCS.md │ Add example links to SDK       │ │
+│ │                                         │ sections                       │ │
+│ └─────────────────────────────────────────┴────────────────────────────────┘ │
+│                                                                              │
+│ Total: 7 modified files                                                      │
+│                                                                              │
+│ ---                                                                          │
+│ Verification                                                                 │
+│                                                                              │
+│ 1. Python: cd sdk-py && pip install -e . &&                                  │
+│ PROMPTDIS_URL=http://localhost:8000 PROMPTDIS_API_KEY=pm_test_... python     │
+│ examples/main.py                                                             │
+│ 2. JavaScript: cd sdk-js && PROMPTDIS_URL=http://localhost:8000              │
+│ PROMPTDIS_API_KEY=pm_test_... node examples/main.mjs                         │
+│ 3. TypeScript: cd sdk-ts/examples && npm install &&                          │
+│ PROMPTDIS_URL=http://localhost:8000 PROMPTDIS_API_KEY=pm_test_... npm start  │
+│ 4. Go: cd sdk-go/examples/basic && PROMPTDIS_URL=http://localhost:8000       │
+│ PROMPTDIS_API_KEY=pm_test_... go run .                                       │
+│ 5. Syntax check: Each example should parse/compile without errors even       │
+│ without a server (env var validation exits cleanly)                          │
+│ 6. README links: All relative links in READMEs resolve correctly             │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+⏺ I'll start by reading the existing SDK source files and READMEs to ensure the
+  examples match the actual APIs.
+
+⏺ Read 9 files (ctrl+o to expand)
+
+⏺ Now let me check a few more files for the Go errors, JS/TS exports, and the
+  docs I need to modify.
+
+⏺ Searched for 4 patterns, read 6 files (ctrl+o to expand)
+
+⏺ Now let me read the specific sections of the API docs where I need to add
+  example links.
+
+⏺ Read 2 files (ctrl+o to expand)
+
+⏺ Good, now I have all the information I need. Let me also check if there's a
+  TypeScript SDK section in the API docs.
+
+⏺ Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+⏺ Now I have everything I need. Let me read the end of the repo structure
+  section and find where the SDK dirs end in the spec, then create all files.
+  I'll create the new files in parallel batches.
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Now I have everything. Let me create all the files. I'll start with the new
+  files in parallel.
+
+⏺ Write(~/src/futureself/prompt-mgmt/.env.example)
+  ⎿  Error writing file
+
+⏺ Write(~/src/futureself/prompt-mgmt/sdk-py/examples/main.py)
+  ⎿  Wrote 60 lines to ../../../sdk-py/examples/main.py
+       1 """Promptdis Python SDK — example usage."""
+       2 
+       3 import os
+       4 import sys
+       5 
+       6 from promptdis import PromptClient, NotFoundError, PromptdisErro
+         r
+       7 
+       8 
+       9 def main():
+      10     base_url = os.environ.get("PROMPTDIS_URL")
+     … +50 lines (ctrl+o to expand)
+
+⏺ Write(~/src/futureself/prompt-mgmt/sdk-py/examples/README.md)
+  ⎿  Wrote 36 lines to ../../../sdk-py/examples/README.md
+       1 # Promptdis Python SDK Example
+       2 
+       3 Minimal CLI demonstrating core SDK operations: fetch, render, ca
+         che, and error handling.
+       4 
+       5 ## Prerequisites
+       6 
+       7 - Python 3.10+
+       8 - Promptdis SDK installed locally:
+       9   ```bash
+      10   cd sdk-py
+     … +26 lines (ctrl+o to expand)
+
+⏺ Write(~/src/futureself/prompt-mgmt/sdk-js/examples/main.mjs)
+  ⎿  Wrote 56 lines to ../../../sdk-js/examples/main.mjs
+       1 #!/usr/bin/env node
+       2 
+       3 import { PromptClient, NotFoundError, PromptdisError } from "../
+         src/index.js";
+       4 
+       5 const baseUrl = process.env.PROMPTDIS_URL;
+       6 const apiKey = process.env.PROMPTDIS_API_KEY;
+       7 
+       8 if (!baseUrl || !apiKey) {
+       9   console.error("Set PROMPTDIS_URL and PROMPTDIS_API_KEY environ
+         ment variables.");
+      10   process.exit(1);
+     … +46 lines (ctrl+o to expand)
+
+⏺ Write(~/src/futureself/prompt-mgmt/sdk-js/examples/README.md)
+  ⎿  Wrote 39 lines to ../../../sdk-js/examples/README.md
+       1 # Promptdis JavaScript SDK Example
+       2 
+       3 Minimal CLI demonstrating core SDK operations: fetch, render, ca
+         che, and error handling.
+       4 
+       5 ## Prerequisites
+       6 
+       7 - Node.js 18+
+       8 - A running Promptdis server with at least one prompt (`demo/mya
+         pp/greeting`)
+       9 
+      10 ## Run
+     … +29 lines (ctrl+o to expand)
+
+⏺ Write(~/src/futureself/prompt-mgmt/sdk-ts/examples/main.ts)
+  ⎿  Wrote 55 lines to ../../../sdk-ts/examples/main.ts
+       1 import { PromptClient, NotFoundError, PromptdisError } from "@pr
+         omptdis/client";
+       2 import type { Prompt } from "@promptdis/client";
+       3 
+       4 const baseUrl = process.env.PROMPTDIS_URL;
+       5 const apiKey = process.env.PROMPTDIS_API_KEY;
+       6 
+       7 if (!baseUrl || !apiKey) {
+       8   console.error("Set PROMPTDIS_URL and PROMPTDIS_API_KEY environ
+         ment variables.");
+       9   process.exit(1);
+      10 }
+     … +45 lines (ctrl+o to expand)
+
+⏺ Write(~/src/futureself/prompt-mgmt/sdk-ts/examples/package.json)
+  ⎿  Wrote 14 lines to ../../../sdk-ts/examples/package.json
+       1 {
+       2   "name": "promptdis-ts-example",
+       3   "private": true,
+       4   "type": "module",
+       5   "scripts": {
+       6     "start": "tsx main.ts"
+       7   },
+       8   "dependencies": {
+       9     "@promptdis/client": "file:.."
+      10   },
+     … +4 lines (ctrl+o to expand)
+
+⏺ Write(~/src/futureself/prompt-mgmt/sdk-ts/examples/tsconfig.json)
+  ⎿  Wrote 11 lines to ../../../sdk-ts/examples/tsconfig.json
+       1 {
+       2   "compilerOptions": {
+       3     "target": "ES2022",
+       4     "module": "ESNext",
+       5     "moduleResolution": "bundler",
+       6     "strict": true,
+       7     "outDir": "dist",
+       8     "skipLibCheck": true
+       9   },
+      10   "include": ["main.ts"]
+     … +1 line (ctrl+o to expand)
+
+⏺ Write(~/src/futureself/prompt-mgmt/sdk-ts/examples/README.md)
+  ⎿  Wrote 45 lines to ../../../sdk-ts/examples/README.md
+       1 # Promptdis TypeScript SDK Example
+       2 
+       3 Minimal CLI demonstrating core SDK operations with full TypeScri
+         pt types: fetch, render, cache, and error handling.
+       4 
+       5 ## Prerequisites
+       6 
+       7 - Node.js 18+
+       8 - A running Promptdis server with at least one prompt (`demo/mya
+         pp/greeting`)
+       9 
+      10 ## Setup
+     … +35 lines (ctrl+o to expand)
+
+⏺ The .env.example already exists — I need to read it first. Let me also create
+  the Go example and remaining files.
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Write(main.go)
+  ⎿  Wrote 98 lines to main.go
+       1 package main
+       2 
+       3 import (
+       4        "context"
+       5        "errors"
+       6        "fmt"
+       7        "log"
+       8        "os"
+       9 
+      10        promptdis "github.com/futureself-app/promptdis-go"
+     … +88 lines (ctrl+o to expand)
+
+⏺ Write(go.mod)
+  ⎿  Wrote 7 lines to go.mod
+      1 module github.com/futureself-app/promptdis-go/examples/basic
+      2 
+      3 go 1.21
+      4 
+      5 require github.com/futureself-app/promptdis-go v0.0.0
+      6 
+      7 replace github.com/futureself-app/promptdis-go => ../..
+
+⏺ Write(README.md)
+  ⎿  Wrote 31 lines to README.md
+       1 # Promptdis Go SDK Example
+       2 
+       3 Minimal CLI demonstrating core SDK operations: fetch, render, ca
+         che, and error handling.
+       4 
+       5 ## Prerequisites
+       6 
+       7 - Go 1.21+
+       8 - A running Promptdis server with at least one prompt (`demo/mya
+         pp/greeting`)
+       9 
+      10 ## Run
+     … +21 lines (ctrl+o to expand)
+
+⏺ Good, the .env.example already has the server config but not the SDK-specific
+  vars. Let me add those and create the doc files.
+
+⏺ Update(~/src/futureself/prompt-mgmt/.env.example)
+  ⎿  Added 5 lines
+      13  # === ElevenLabs TTS (Optional) ===
+      14  ELEVENLABS_API_KEY=
+      15  
+      16 +# === SDK Examples ===                                         
+      17 +# Used by sdk-*/examples/ sample apps                          
+      18 +PROMPTDIS_URL=http://localhost:8000                            
+      19 +PROMPTDIS_API_KEY=pm_test_your_key_here                        
+      20 +                                                               
+      21  # === Optional ===
+      22  # LOG_LEVEL=info
+      23  # CORS_ORIGINS=http://localhost:5173
+
+⏺ Write(~/src/futureself/dwight_docs/prompt_mgmt/PROMPTDIS_EXAMPLES.md)
+  ⎿  Wrote 64 lines to
+     ../../../../dwight_docs/prompt_mgmt/PROMPTDIS_EXAMPLES.md
+       1 # Promptdis SDK Examples
+       2 
+       3 Runnable sample apps for every Promptdis SDK. Each example is a 
+         single-file CLI that demonstrates the core SDK operations.
+       4 
+       5 ## Prerequisites
+       6 
+       7 1. A running Promptdis server (`uvicorn server.main:app --reload
+          --port 8000`)
+       8 2. At least one prompt indexed (e.g., `demo/myapp/greeting`)
+       9 3. An API key (generate in the web UI under Settings > API Keys)
+      10 4. Environment variables set:
+     … +54 lines (ctrl+o to expand)
+
+⏺ Write(~/src/futureself/dwight_docs/prompt_mgmt/PROMPTDIS_SDK_SAMPLE_APPS.md)
+  ⎿  Wrote 41 lines to
+     ../../../../dwight_docs/prompt_mgmt/PROMPTDIS_SDK_SAMPLE_APPS.md
+       1 # SDK Sample Apps — Build Plan
+       2 
+       3 Build plan and checklist for creating runnable example applicati
+         ons for each Promptdis SDK.
+       4 
+       5 ## Task Checklist
+       6 
+       7 ### New files
+       8 
+       9 - [x] `.env.example` — Add SDK env vars (`PROMPTDIS_URL`, `PROMP
+         TDIS_API_KEY`)
+      10 - [x] `sdk-py/examples/main.py` — Python CLI example
+     … +31 lines (ctrl+o to expand)
+
+⏺ Now let me update all the SDK READMEs and the main README with "Examples"
+  sections, and update the spec docs.
+
+⏺ Update(~/src/futureself/prompt-mgmt/sdk-py/README.md)
+  ⎿  Added 10 lines
+      316  | `model` | `dict` | Model configuration |
+      317  | `meta` | `dict` | Full response data |
+      318  
+      319 +## Examples                                                   
+      320 +                                                              
+      321 +See [`examples/main.py`](examples/main.py) for a runnable CLI 
+          +that demonstrates fetch, render, cache, and error handling.   
+      322 +                                                              
+      323 +```bash                                                       
+      324 +cd sdk-py                                                     
+      325 +pip install -e .                                              
+      326 +PROMPTDIS_URL=http://localhost:8000 PROMPTDIS_API_KEY=pm_test_
+          +... python examples/main.py                                   
+      327 +```                                                           
+      328 +                                                              
+      329  ## Dependencies
+      330  
+      331  - [httpx](https://www.python-httpx.org/) — HTTP client (sync a
+           nd async)
+
+⏺ Update(~/src/futureself/prompt-mgmt/sdk-js/README.md)
+  ⎿  Added 9 lines
+      325  
+      326  For full Jinja2 rendering (conditionals, loops, filters, inclu
+           des), use `client.render()` which delegates to the server.
+      327  
+      328 +## Examples                                                   
+      329 +                                                              
+      330 +See [`examples/main.mjs`](examples/main.mjs) for a runnable CL
+          +I that demonstrates fetch, render, cache, and error handling. 
+      331 +                                                              
+      332 +```bash                                                       
+      333 +cd sdk-js                                                     
+      334 +PROMPTDIS_URL=http://localhost:8000 PROMPTDIS_API_KEY=pm_test_
+          +... node examples/main.mjs                                    
+      335 +```                                                           
+      336 +                                                              
+      337  ## Development
+      338  
+      339  ```bash
+
+⏺ Update(~/src/futureself/prompt-mgmt/sdk-ts/README.md)
+  ⎿  Added 9 lines
+      286  export { renderLocal } from "./models";
+      287  ```
+      288  
+      289 +## Examples                                                   
+      290 +                                                              
+      291 +See [`examples/`](examples/) for a runnable TypeScript CLI tha
+          +t demonstrates fetch, render, cache, and error handling.      
+      292 +                                                              
+      293 +```bash                                                       
+      294 +cd sdk-ts/examples && npm install                             
+      295 +PROMPTDIS_URL=http://localhost:8000 PROMPTDIS_API_KEY=pm_test_
+          +... npm start                                                 
+      296 +```                                                           
+      297 +                                                              
+      298  ## Development
+      299  
+      300  ```bash
+
+⏺ Update(~/src/futureself/prompt-mgmt/sdk-go/README.md)
+  ⎿  Added 9 lines
+      252  })
+      253  ```
+      254  
+      255 +## Examples                                                   
+      256 +                                                              
+      257 +See [`examples/basic/`](examples/basic/) for a runnable CLI th
+          +at demonstrates fetch, render, cache, and error handling.     
+      258 +                                                              
+      259 +```bash                                                       
+      260 +cd sdk-go/examples/basic                                      
+      261 +PROMPTDIS_URL=http://localhost:8000 PROMPTDIS_API_KEY=pm_test_
+          +... go run .                                                  
+      262 +```                                                           
+      263 +                                                              
+      264  ## Differences from Python/TS SDKs
+      265  
+      266  | Feature | Python | TypeScript | Go |
+
+⏺ Update(~/src/futureself/prompt-mgmt/README.md)
+  ⎿  Added 13 lines
+      228  
+      229  Zero dependencies, no build step, ESM + CJS. See [`sdk-js/READ
+           ME.md`](sdk-js/README.md) for full documentation.
+      230  
+      231 +## Examples                                                   
+      232 +                                                              
+      233 +Each SDK includes a runnable example app in its `examples/` di
+          +rectory:                                                      
+      234 +                                                              
+      235 +| Language | Location | Run Command |                         
+      236 +|----------|----------|-------------|                         
+      237 +| Python | `sdk-py/examples/` | `python examples/main.py` |   
+      238 +| JavaScript | `sdk-js/examples/` | `node examples/main.mjs` |
+      239 +| TypeScript | `sdk-ts/examples/` | `cd examples && npm start`
+          + |                                                            
+      240 +| Go | `sdk-go/examples/basic/` | `cd examples/basic && go run
+          + .` |                                                         
+      241 +                                                              
+      242 +All examples require `PROMPTDIS_URL` and `PROMPTDIS_API_KEY` e
+          +nvironment variables. See [PROMPTDIS_EXAMPLES.md](../dwight_do
+          +cs/prompt_mgmt/PROMPTDIS_EXAMPLES.md) for the full guide.     
+      243 +                                                              
+      244  ## API Overview
+      245  
+      246  All endpoints are under `/api/v1`. Full documentation: [PROMPT
+           DIS_API_DOCS.md](../dwight_docs/prompt_mgmt/PROMPTDIS_API_DOCS
+           .md)
+
+⏺ Now update the spec and API docs.
+
+⏺ Update(~/src/futureself/dwight_docs/prompt_mgmt/PROMPT_APP.md)
+  ⎿  Added 1 line
+      1482  | Diff viewer | Side-by-side diff between any two versions of
+             a prompt (git history). |
+      1483  | Batch operations | Select multiple prompts → update model, 
+            tags, or environment in bulk. |
+      1484  | Prompty export/import | Export prompts as `.prompty` files.
+             Import `.prompty` files. |
+      1485 +| SDK example apps | Runnable CLI examples in `sdk-{lang}/exa
+           +mples/` for Python, JS, TS, Go. Demonstrate fetch, render, ca
+           +che, error handling. |                                       
+      1486  
+      1487  **Phase 4 exit criteria:**
+      1488  - [ ] `pip install promptdis` works from PyPI
+
+⏺ Update(~/src/futureself/dwight_docs/prompt_mgmt/PROMPT_APP.md)
+  ⎿  Added 3 lines
+      1722  │           ├── cache.py                 # LRU cache with ETa
+            g + TTL
+      1723  │           ├── models.py                # Prompt dataclass
+      1724  │           └── exceptions.py            # PromptdisError, No
+            tFoundError, etc.
+      1725 +│   └── examples/                                            
+      1726 +│       ├── main.py                      # Runnable CLI examp
+           +le                                                           
+      1727 +│       └── README.md                                        
+      1728  │
+      1729  ├── sdk-js/                               # JavaScript SDK (n
+            pm installable)
+      1730  │   ├── package.json                     # Package config for
+             npm
+
+⏺ Update(~/src/futureself/dwight_docs/prompt_mgmt/PROMPT_APP.md)
+  ⎿  Added 17 lines
+      1737  │   │   └── errors.js                   # PromptdisError, Not
+            FoundError, etc.
+      1738  │   ├── cjs/
+      1739  │   │   └── index.cjs                   # CommonJS wrapper
+      1740 +│   ├── examples/                                            
+      1741 +│   │   ├── main.mjs                   # Runnable CLI example
+      1742 +│   │   └── README.md                                        
+      1743  │   └── tests/
+      1744  │       └── client.test.js              # Vitest tests
+      1745  │
+      1746 +├── sdk-ts/                               # TypeScript SDK (@
+           +promptdis/client)                                            
+      1747 +│   └── examples/                                            
+      1748 +│       ├── main.ts                      # Runnable CLI examp
+           +le                                                           
+      1749 +│       ├── package.json                                     
+      1750 +│       ├── tsconfig.json                                    
+      1751 +│       └── README.md                                        
+      1752 +│                                                            
+      1753 +├── sdk-go/                               # Go SDK (go get)  
+      1754 +│   └── examples/                                            
+      1755 +│       └── basic/                                           
+      1756 +│           ├── main.go                  # Runnable CLI examp
+           +le                                                           
+      1757 +│           ├── go.mod                                       
+      1758 +│           └── README.md                                    
+      1759 +│                                                            
+      1760  ├── tests/                                # Test suite
+      1761  │   ├── conftest.py
+      1762  │   ├── server/
+
+⏺ Update(~/src/futureself/dwight_docs/prompt_mgmt/PROMPTDIS_API_DOCS.md)
+  ⎿  Added 2 lines
+      81  
+      82  ## Python SDK Reference
+      83  
+      84 +See `sdk-py/examples/` for a runnable example.                 
+      85 +                                                               
+      86  ### Installation
+      87  
+      88  ```bash
+
+⏺ Update(~/src/futureself/dwight_docs/prompt_mgmt/PROMPTDIS_API_DOCS.md)
+  ⎿  Added 2 lines
+      333  
+      334  ### Go SDK Reference
+      335  
+      336 +See `sdk-go/examples/basic/` for a runnable example.          
+      337 +                                                              
+      338  ```bash
+      339  go get github.com/futureself-app/promptdis-go
+      340  ```
+
+⏺ Update(~/src/futureself/dwight_docs/prompt_mgmt/PROMPTDIS_API_DOCS.md)
+  ⎿  Added 2 lines
+      397  
+      398  ### JavaScript SDK Reference
+      399  
+      400 +See `sdk-js/examples/` for a runnable example. For TypeScript,
+          + see `sdk-ts/examples/`.                                      
+      401 +                                                              
+      402  #### Installation
+      403  
+      404  ```bash
+
+⏺ All files created and updated. Let me verify the Go example compiles by
+  checking syntax.
+
+⏺ Bash(cd /Users/lorenwinzeler/src/futureself/prompt-mgmt/sdk-go/examples/basic
+      && go build . 2>&1)
+  ⎿  (No output)
+
+⏺ Go example compiles cleanly. Let me do a quick summary of everything that was
+  done.
+
+  All 14 new files created and 7 existing files modified:
+
+  New files:
+  - .env.example — Added SDK env vars section
+  - sdk-py/examples/main.py — Python CLI example
+  - sdk-py/examples/README.md
+  - sdk-js/examples/main.mjs — JavaScript CLI example
+  - sdk-js/examples/README.md
+  - sdk-ts/examples/main.ts — TypeScript CLI example
+  - sdk-ts/examples/package.json — tsx runner config
+  - sdk-ts/examples/tsconfig.json
+  - sdk-ts/examples/README.md
+  - sdk-go/examples/basic/main.go — Go CLI example
+  - sdk-go/examples/basic/go.mod — with replace directive for local dev
+  - sdk-go/examples/basic/README.md
+  - dwight_docs/.../PROMPTDIS_EXAMPLES.md — index/guide
+  - dwight_docs/.../PROMPTDIS_SDK_SAMPLE_APPS.md — build plan/checklist
+
+  Modified files:
+  - sdk-py/README.md — Added "Examples" section
+  - sdk-js/README.md — Added "Examples" section
+  - sdk-ts/README.md — Added "Examples" section
+  - sdk-go/README.md — Added "Examples" section
+  - README.md (root) — Added "Examples" section with table
+  - PROMPT_APP.md — Updated repo structure tree + Phase 4 table
+  - PROMPTDIS_API_DOCS.md — Added example links to Python, Go, and JS/TS SDK
+  sections
+
+  Each example follows the same pattern: env var validation, fetch by name,
+  fetch by ID, local render, server-side render, cache stats, and error handling
+   — adapted to each language's SDK API and idioms.
+
+✻ Brewed for 3m 20s
+
+❯ Make a shell script that builds all of the SDKs and the SDK sample apps   
+  we just created.                                                          
+
+⏺ Let me check the existing build/install setups for each SDK.
+
+⏺ Read 4 files (ctrl+o to expand)
+
+⏺ Write(~/src/futureself/prompt-mgmt/scripts/build-sdks.sh)
+  ⎿  Wrote 95 lines to ../../../scripts/build-sdks.sh
+      1 #!/usr/bin/env bash
+      2 set -euo pipefail
+      3 
+      4 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+      5 FAILED=()
+      6 
+      7 step() { printf "\n\033[1;34m==> %s\033[0m\n" "$1"; }
+      8 ok()   { printf "\033[1;32m    OK\033[0m\n"; }
+      9 fail() { printf "\033[1;31m    FAILED\033[0m\n"; FAILED+=("$1"); 
+        }
+     … +85 lines (ctrl+o to expand)
+
+⏺ Bash(chmod +x
+      /Users/lorenwinzeler/src/futureself/prompt-mgmt/scripts/build-sdks.sh)
+  ⎿  Done
+
+⏺ Created scripts/build-sdks.sh. It runs 10 steps:
+
+  1. Python SDK — pip install -e . + syntax-check the example
+  2. JavaScript SDK — npm install + node --check on the example
+  3. TypeScript SDK — npm install + tsc build + install example deps +
+  type-check the example
+  4. Go SDK — go build ./... + build the example
+
+  Each step reports OK/FAILED with color, and the script exits with a summary.
+  Run it with:
+
+  ./scripts/build-sdks.sh

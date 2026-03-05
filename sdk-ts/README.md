@@ -286,6 +286,15 @@ export type { PromptClientOptions } from "./client";
 export { renderLocal } from "./models";
 ```
 
+## Examples
+
+See [`examples/`](examples/) for a runnable TypeScript CLI that demonstrates fetch, render, cache, and error handling.
+
+```bash
+cd sdk-ts/examples && npm install
+PROMPTDIS_URL=http://localhost:8000 PROMPTDIS_API_KEY=pm_test_... npm start
+```
+
 ## Development
 
 ```bash

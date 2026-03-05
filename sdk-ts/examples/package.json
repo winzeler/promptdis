@@ -1,0 +1,14 @@
+{
+  "name": "promptdis-ts-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx main.ts"
+  },
+  "dependencies": {
+    "@promptdis/client": "file:.."
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0"
+  }
+}
