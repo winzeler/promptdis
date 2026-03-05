@@ -228,6 +228,19 @@ const { rendered_body } = await client.render(prompt.id, {
 
 Zero dependencies, no build step, ESM + CJS. See [`sdk-js/README.md`](sdk-js/README.md) for full documentation.
 
+## Examples
+
+Each SDK includes a runnable example app in its `examples/` directory:
+
+| Language | Location | Run Command |
+|----------|----------|-------------|
+| Python | `sdk-py/examples/` | `python examples/main.py` |
+| JavaScript | `sdk-js/examples/` | `node examples/main.mjs` |
+| TypeScript | `sdk-ts/examples/` | `cd examples && npm start` |
+| Go | `sdk-go/examples/basic/` | `cd examples/basic && go run .` |
+
+All examples require `PROMPTDIS_URL` and `PROMPTDIS_API_KEY` environment variables. See [PROMPTDIS_EXAMPLES.md](../dwight_docs/prompt_mgmt/PROMPTDIS_EXAMPLES.md) for the full guide.
+
 ## API Overview
 
 All endpoints are under `/api/v1`. Full documentation: [PROMPTDIS_API_DOCS.md](../dwight_docs/prompt_mgmt/PROMPTDIS_API_DOCS.md)

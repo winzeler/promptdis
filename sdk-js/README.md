@@ -325,6 +325,15 @@ import { renderLocal } from "@promptdis/client-js";
 
 For full Jinja2 rendering (conditionals, loops, filters, includes), use `client.render()` which delegates to the server.
 
+## Examples
+
+See [`examples/main.mjs`](examples/main.mjs) for a runnable CLI that demonstrates fetch, render, cache, and error handling.
+
+```bash
+cd sdk-js
+PROMPTDIS_URL=http://localhost:8000 PROMPTDIS_API_KEY=pm_test_... node examples/main.mjs
+```
+
 ## Development
 
 ```bash
