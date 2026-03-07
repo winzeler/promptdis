@@ -325,7 +325,7 @@ git push origin v0.2.0
 ```bash
 # Local / container
 curl http://localhost:8000/health
-# Expected: {"status":"ok","service":"promptdis","version":"0.1.0"}
+# Expected: {"status":"ok","service":"promptdis","version":"<current-version>"}
 
 # Lambda
 curl https://<api-gw-id>.execute-api.<region>.amazonaws.com/<stage>/health
